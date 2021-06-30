@@ -1,8 +1,8 @@
 'use strict';
 
 const express = require('express');
-const Courses = require('./models').Course;
-const { asyncHandler } = require('./middleware/async-handler');
+const Courses = require('../models').Course;
+const { asyncHandler } = require('../middleware/async-handler');
 const router = express.Router();
 
 /* Courses routes */
@@ -11,9 +11,12 @@ const router = express.Router();
 router.get(
   '/courses',
   asyncHandler(async (req, res) => {
-    const courses = await Courses.findAll();
-    res.json(courses);
-    res.status(200).end();
+    const courses = await Courses.findAll({
+      attributes: {
+        exclude: ['password', 'createdAt', 'updatedAt'],
+      },
+    });
+    res.status(200).json(courses);
   })
 );
 
@@ -21,9 +24,17 @@ router.get(
 router.get(
   '/courses/:id',
   asyncHandler(async (req, res) => {
-    const courses = await Courses.findByPk(req.params.id);
-    res.json(courses);
-    res.status(200).end();
+    const course = await Courses.findByPk(req.params.id, {
+      attributes: {
+        exclude: ['password', 'createdAt', 'updatedAt'],
+      },
+    });
+    if (course) {
+      res.status(200).json(course);
+      console.log(course);
+    } else {
+      res.status(404);
+    }
   })
 );
 
@@ -34,7 +45,7 @@ router.post(
     let course;
     console.log(req.body);
     try {
-      user = await Courses.create(req.body);
+      course = await Courses.create(req.body);
       res.status(201).end();
     } catch (error) {
       if (error.name === 'SequelizeValidationError') {
