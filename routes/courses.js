@@ -42,20 +42,19 @@ router.get(
 router.post(
   '/courses',
   asyncHandler(async (req, res) => {
-    let course;
-    console.log(req.body);
     try {
-      course = await Courses.create(req.body);
-      res.status(201).end();
+      const course = await Courses.create(req.body);
+      res
+        .status(201)
+        .location(`/courses/${course.id}`)
+        .json({ message: 'Course created' })
+        .end();
     } catch (error) {
       if (error.name === 'SequelizeValidationError') {
+        const errors = error.errors.map((err) => err.message);
+        res.status(400).json({ errors });
         console.log(error);
-        res.json({
-          message: 'The course could not be created.',
-        });
-        res.status(400).end();
       } else {
-        console.log(error);
         throw error;
       }
     }
@@ -73,17 +72,17 @@ router.put(
         await course.update(req.body);
         res.status(204).end();
       } else {
-        res.status(404).json({ message: 'Course was not updated' });
+        res.status(403).json({ message: 'Course was not updated' });
       }
     } catch (error) {
-      if (error.name === 'SequelizeValidationError') {
+      if (
+        error.name === 'SequelizeValidationError' ||
+        error.name === 'SequelizeUniqueConstraintError'
+      ) {
+        const errors = error.errors.map((err) => err.message);
+        res.status(400).json({ errors });
         console.log(error);
-        res.json({
-          message: 'The course could not be updated.',
-        });
-        res.status(400).end();
       } else {
-        console.log(error);
         throw error;
       }
     }
