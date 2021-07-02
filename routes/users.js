@@ -11,7 +11,11 @@ const router = express.Router();
 //returns the currently authenticated user along with a 200 HTTP status code.
 router.get('/users', authenticateUser, (req, res) => {
   const user = req.currentUser;
-  res.status(200).json(user);
+  res.status(200).json({
+    firstName: user.firstName,
+    lastName: user.lastName,
+    emailAddress: user.emailAddress,
+  });
 });
 
 // Post Route to add a new user:
@@ -37,5 +41,11 @@ router.post(
     }
   })
 );
+
+// router.delete('/users/:id', async (req, res) => {
+//   let user = await Users.findByPk(req.params.id);
+//   await user.destroy();
+//   res.status(204).end();
+// });
 
 module.exports = router;
