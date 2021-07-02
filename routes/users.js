@@ -3,19 +3,16 @@
 const express = require('express');
 const Users = require('../models').User;
 const { asyncHandler } = require('../middleware/async-handler');
+const { authenticateUser } = require('../middleware/auth-user');
 const router = express.Router();
 
 /* Users routes */
 
-// Get Route for a list of users:
-router.get(
-  '/users',
-  asyncHandler(async (req, res) => {
-    const users = await Users.findAll();
-    res.json(users);
-    res.status(200).end();
-  })
-);
+//returns the currently authenticated user along with a 200 HTTP status code.
+router.get('/users', authenticateUser, (req, res) => {
+  const user = req.currentUser;
+  res.status(200).json(user);
+});
 
 // Post Route to add a new user:
 router.post(
